@@ -60,9 +60,8 @@ public class FCFS {
 			processBlocked();			
 			processReady();
 
-			if(!ranOneProcess && ready.size() > 0)
-			{
-				ready.remove(running.getReadyTime(),running.getProcessID());
+			if(!ranOneProcess)
+			{				
 				processRunning();
 			}		
 		}
@@ -108,7 +107,7 @@ public class FCFS {
 		else						
 		{							
 			int IOburst = rnd.randomOS(running.getIO());
-			//System.out.println("IO Burst: " + IOburst);
+			System.out.println("IO Burst: " + IOburst);
 			running.setPendingIOBurst(IOburst);											
 			running.setStatus(ProcessStatus.Blocked);
 			
@@ -152,7 +151,9 @@ public class FCFS {
 				proc.setStatus(ProcessStatus.Running);
 				running = proc;
 				cpuBurst = rnd.randomOS(proc.getBurst());
-				//System.out.println("CPU Burst: " + cpuBurst);				
+				System.out.println("CPU Burst: " + cpuBurst);
+				itr.remove();
+				ready.remove(key);
 			}
 			else
 			{

@@ -116,8 +116,8 @@ public class Process {
 	}
 
 	public String toString() {
-		String str = "Process " +processID +":\n\t(A,B,C,IO) = ("+ arrivalTime+","+burst+","+totalCPUtime+","+IO+")\n\tFinishing time: "+
-				finishingTime + "\n\tTurnaround time: " + getTurnaroundTime() + "\n\tI/O time: " + IOTime + "\n\tWaiting time: " + 
+		String str = "\nProcess " +processID +":\n\t(A,B,C,IO) = ("+ arrivalTime+","+burst+","+totalCPUtime+","+IO+")\n\tFinishing time: "+
+				finishingTime + "\n\tPending time: " + pendingCPUTime+ "\n\tTurnaround time: " + getTurnaroundTime() + "\n\tI/O time: " + IOTime + "\n\tWaiting time: " + 
 				waitingTime;
 
 		return str;
