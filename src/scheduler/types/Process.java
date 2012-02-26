@@ -100,6 +100,11 @@ public class Process {
 	public void setStatus(ProcessStatus stat) {
 		status = stat;
 	}
+	
+	public String displayStatus()
+	{
+		return "\t"+status;
+	}
 
 	public String toString() {
 		String str = "Process " +processID +":\n\t(A,B,C,IO) = ("+ arrivalTime+","+burst+","+totalCPUtime+","+IO+")\n\tFinishing time: "+
