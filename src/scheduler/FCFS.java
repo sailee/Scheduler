@@ -9,11 +9,11 @@ import scheduler.types.Process;
 import scheduler.types.ProcessStatus;
 
 public class FCFS {
-	private static DualKeyTreeMap<Integer, Integer, Process> unstarted, ready, blocked, complete, processes;
-	private static scheduler.types.Process running;
-	private static RandomNos rnd;
-	private static int cpuBurst, clock, processCount;
-
+	private DualKeyTreeMap<Integer, Integer, Process> unstarted, ready, blocked, complete, processes;
+	private scheduler.types.Process running;
+	private RandomNos rnd;
+	private int cpuBurst, clock, processCount;
+	
 	public FCFS(DualKeyTreeMap<Integer, Integer, Process> procs) {
 		Comparator<Integer> cmp = new Comparator<Integer>() {
 
@@ -55,13 +55,13 @@ public class FCFS {
 				processRunning();
 			}		
 		}
-
+		displayStatus();
 		displayProcessDetails();
 	}	
 
 	private void displayStatus()
 	{
-		String str = "";
+		String str = clock + ":\t";
 		DualKey<Integer, Integer> key;
 		
 		processes.clear();
@@ -105,7 +105,7 @@ public class FCFS {
 		
 		while(itr.hasNext())
 		{
-			System.out.println(processes.get(itr.next()).getStatus());
+			str = str + "\t"+ processes.get(itr.next()).getStatus();
 		}
 
 		System.out.println(str);
@@ -125,14 +125,16 @@ public class FCFS {
 			if(running.getPendingCPUTime() == 0)							
 			{
 				running.finished(clock+1);
-				running.setStatus(ProcessStatus.Complete);
-				running = null;						
+				running.setStatus(ProcessStatus.Complete);								
 				complete.put(running.getArrivalTime(), running.getProcessID(), running);
+				
+				running = null;		
 			}						
 		}						
 		else						
 		{							
-			int IOburst = rnd.randomOS(running.getIO());							
+			int IOburst = rnd.randomOS(running.getIO());
+			System.out.println("IO Burst: " + IOburst);
 			running.setPendingIOBurst(IOburst);											
 			running.setStatus(ProcessStatus.Blocked);
 			
@@ -154,6 +156,7 @@ public class FCFS {
 
 			if(proc.getArrivalTime() == clock)
 			{
+				itr.remove();
 				proc.setStatus(ProcessStatus.Ready);
 				unstarted.remove(key);
 				ready.put(key, proc);
@@ -175,6 +178,7 @@ public class FCFS {
 				proc.setStatus(ProcessStatus.Running);
 				running = proc;
 				cpuBurst = rnd.randomOS(proc.getBurst());
+				System.out.println("CPU Burst: " + cpuBurst);
 				//ready.remove(key);
 			}
 			else
@@ -200,6 +204,7 @@ public class FCFS {
 			}
 			else
 			{
+				itr.remove();
 				proc.setStatus(ProcessStatus.Ready);
 				blocked.remove(key);
 				ready.put(key, proc);
@@ -209,13 +214,14 @@ public class FCFS {
 
 	private void displayProcessDetails() 
 	{
-		Iterator<DualKey<Integer, Integer>> itr = unstarted.keySet().iterator();		 
+		System.out.println("\nScheduling alogirthm used was : FCFS\n");
+		Iterator<DualKey<Integer, Integer>> itr = complete.keySet().iterator();		 
 
 		while(itr.hasNext())
 		{
 			DualKey<Integer, Integer> key = itr.next();				 
 
-			System.out.println(unstarted.get(key));
+			System.out.println(complete.get(key));
 		}
 	}
 
