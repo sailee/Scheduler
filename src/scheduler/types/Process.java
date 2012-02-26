@@ -5,7 +5,15 @@ package scheduler.types;
  *
  */
 public class Process {
-	private int processID, arrivalTime, burst, totalCPUtime, IO, pendingCPUTime, pendingIOBurst;
+	private int processID, arrivalTime, burst, totalCPUtime, IO, pendingCPUTime, pendingIOBurst, readyTime;
+	public int getReadyTime() {
+		return readyTime;
+	}
+
+	public void setReadyTime(int readyTime) {
+		this.readyTime = readyTime;
+	}
+
 	private int finishingTime, IOTime , waitingTime;
 	private ProcessStatus status;
 	
@@ -21,6 +29,7 @@ public class Process {
 
 	public Process(int arrival, int burst, int cpu, int IO, int ID)
 	{
+		readyTime = arrival;
 		arrivalTime = arrival;
 		this.burst = burst;
 		totalCPUtime = cpu;

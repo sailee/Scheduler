@@ -2,6 +2,7 @@ package scheduler;
 
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.TreeMap;
 
 import scheduler.types.DualKey;
 import scheduler.types.DualKeyTreeMap;
@@ -9,7 +10,8 @@ import scheduler.types.Process;
 import scheduler.types.ProcessStatus;
 
 public class FCFS {
-	private DualKeyTreeMap<Integer, Integer, Process> unstarted, ready, blocked, complete, processes;
+	private DualKeyTreeMap<Integer, Integer, Process> unstarted, ready, blocked;
+	private TreeMap<Integer, Process> complete, processes;
 	private scheduler.types.Process running;
 	private RandomNos rnd;
 	private int cpuBurst, clock, processCount;
@@ -27,8 +29,17 @@ public class FCFS {
 		unstarted = procs;		
 		ready =new DualKeyTreeMap<Integer, Integer, Process>(cmp, cmp);
 		blocked = new DualKeyTreeMap<Integer, Integer, Process>(cmp, cmp);
-		complete = new DualKeyTreeMap<Integer, Integer, Process>(cmp, cmp);
-		processes = new DualKeyTreeMap<Integer, Integer, Process>(cmp, cmp);
+		complete = new TreeMap<>();
+		processes = new TreeMap<>();
+		
+		Iterator<DualKey<Integer, Integer>> itr = procs.keySet().iterator();
+		
+		while(itr.hasNext())
+		{
+			DualKey<Integer, Integer> key = itr.next();
+			
+			processes.put(key.getProcessID(), procs.get(key));
+		}
 
 		rnd = new RandomNos();
 		running = null;
@@ -51,7 +62,7 @@ public class FCFS {
 
 			if(!ranOneProcess && ready.size() > 0)
 			{
-				ready.remove(running.getArrivalTime(),running.getProcessID());
+				ready.remove(running.getReadyTime(),running.getProcessID());
 				processRunning();
 			}		
 		}
@@ -61,53 +72,16 @@ public class FCFS {
 
 	private void displayStatus()
 	{
-		String str = clock + ":\t";
-		DualKey<Integer, Integer> key;
-		
-		processes.clear();
-		
-		Iterator<DualKey<Integer, Integer>> itr = unstarted.keySet().iterator();		
-
-		while(itr.hasNext())
-		{
-			key = itr.next();
-			processes.put(key, unstarted.get(key));
-		}
-		
-		itr = ready.keySet().iterator();		
-
-		while(itr.hasNext())
-		{
-			key = itr.next();
-			processes.put(key, ready.get(key));
-		}
-		
-		itr = blocked.keySet().iterator();		
-
-		while(itr.hasNext())
-		{
-			key = itr.next();
-			processes.put(key, blocked.get(key));
-		}
-		
-		itr = complete.keySet().iterator();		
-
-		while(itr.hasNext())
-		{
-			key = itr.next();
-			processes.put(key, complete.get(key));
-		}
-		
-		if(running != null)
-			processes.put(running.getArrivalTime(), running.getProcessID(), running);
-		
-		itr = processes.keySet().iterator();
+		Iterator<Integer> itr = processes.keySet().iterator();
+		String str = clock + ": ";
 		
 		while(itr.hasNext())
 		{
-			str = str + "\t"+ processes.get(itr.next()).getStatus();
+			Integer procID = itr.next();			
+			
+			str = str + "\t\t" + processes.get(procID).getStatus();
 		}
-
+		
 		System.out.println(str);
 	}
 
@@ -126,7 +100,7 @@ public class FCFS {
 			{
 				running.finished(clock+1);
 				running.setStatus(ProcessStatus.Complete);								
-				complete.put(running.getArrivalTime(), running.getProcessID(), running);
+				complete.put(running.getProcessID(), running);
 				
 				running = null;		
 			}						
@@ -134,7 +108,7 @@ public class FCFS {
 		else						
 		{							
 			int IOburst = rnd.randomOS(running.getIO());
-			System.out.println("IO Burst: " + IOburst);
+			//System.out.println("IO Burst: " + IOburst);
 			running.setPendingIOBurst(IOburst);											
 			running.setStatus(ProcessStatus.Blocked);
 			
@@ -178,8 +152,7 @@ public class FCFS {
 				proc.setStatus(ProcessStatus.Running);
 				running = proc;
 				cpuBurst = rnd.randomOS(proc.getBurst());
-				System.out.println("CPU Burst: " + cpuBurst);
-				//ready.remove(key);
+				//System.out.println("CPU Burst: " + cpuBurst);				
 			}
 			else
 			{
@@ -207,7 +180,8 @@ public class FCFS {
 				itr.remove();
 				proc.setStatus(ProcessStatus.Ready);
 				blocked.remove(key);
-				ready.put(key, proc);
+				proc.setReadyTime(clock);
+				ready.put(clock, key.getProcessID(), proc);
 			}
 		}
 	}
@@ -215,11 +189,11 @@ public class FCFS {
 	private void displayProcessDetails() 
 	{
 		System.out.println("\nScheduling alogirthm used was : FCFS\n");
-		Iterator<DualKey<Integer, Integer>> itr = complete.keySet().iterator();		 
+		Iterator<Integer> itr = complete.keySet().iterator();		 
 
 		while(itr.hasNext())
 		{
-			DualKey<Integer, Integer> key = itr.next();				 
+			Integer key = itr.next();				 
 
 			System.out.println(complete.get(key));
 		}
