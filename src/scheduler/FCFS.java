@@ -10,12 +10,13 @@ import scheduler.types.Process;
 import scheduler.types.ProcessStatus;
 
 public class FCFS {
-	private DualKeyTreeMap<Integer, Integer, Process> unstarted, ready, blocked;
+	private DualKeyTreeMap<Integer, Integer, Process> unstarted, blocked;
 	private TreeMap<Integer, Process> complete, processes;
 	private scheduler.types.Process running;
 	private RandomNos rnd;
 	private int cpuBurst, clock, processCount;
-	
+	private TreeMap<Integer, TreeMap<Integer, Process>> ready;
+
 	public FCFS(DualKeyTreeMap<Integer, Integer, Process> procs) {
 		Comparator<Integer> cmp = new Comparator<Integer>() {
 
@@ -27,17 +28,17 @@ public class FCFS {
 		};
 
 		unstarted = procs;		
-		ready =new DualKeyTreeMap<Integer, Integer, Process>(cmp, cmp);
+		ready = new TreeMap<Integer,TreeMap<Integer,Process>>();
 		blocked = new DualKeyTreeMap<Integer, Integer, Process>(cmp, cmp);
-		complete = new TreeMap<>();
-		processes = new TreeMap<>();
-		
+		complete = new TreeMap<Integer, Process>();
+		processes = new TreeMap<Integer, Process>();
+
 		Iterator<DualKey<Integer, Integer>> itr = procs.keySet().iterator();
-		
+
 		while(itr.hasNext())
 		{
 			DualKey<Integer, Integer> key = itr.next();
-			
+
 			processes.put(key.getProcessID(), procs.get(key));
 		}
 
@@ -72,15 +73,15 @@ public class FCFS {
 	private void displayStatus()
 	{
 		Iterator<Integer> itr = processes.keySet().iterator();
-		String str = clock + ": ";
-		
+		String str = "Before cycle\t" +clock + ": ";
+
 		while(itr.hasNext())
 		{
 			Integer procID = itr.next();			
-			
-			str = str + "\t\t" + processes.get(procID).getStatus();
+
+			str = str + "\t" + processes.get(procID).displayStatus();
 		}
-		
+
 		System.out.println(str);
 	}
 
@@ -98,19 +99,23 @@ public class FCFS {
 			if(running.getPendingCPUTime() == 0)							
 			{
 				running.finished(clock+1);
-				running.setStatus(ProcessStatus.Complete);								
+				running.setStatus(ProcessStatus.terminated);								
 				complete.put(running.getProcessID(), running);
-				
+
 				running = null;		
 			}						
 		}						
 		else						
 		{							
-			int IOburst = rnd.randomOS(running.getIO());
-			System.out.println("IO Burst: " + IOburst);
+			int rndBurst = rnd.randomOS(running.getIO());
+			int IOburst = 1 + (rndBurst%running.getIO());
+
+			//System.out.println("\nIO Burst:\t" + rndBurst + "\t"+ IOburst);
+
+
 			running.setPendingIOBurst(IOburst);											
-			running.setStatus(ProcessStatus.Blocked);
-			
+			running.setStatus(ProcessStatus.blocked);
+
 			blocked.put(running.getArrivalTime(), running.getProcessID(), running);			
 			running = null;			
 			return false;
@@ -130,48 +135,70 @@ public class FCFS {
 			if(proc.getArrivalTime() == clock)
 			{
 				itr.remove();
-				proc.setStatus(ProcessStatus.Ready);
+				proc.setStatus(ProcessStatus.ready);
 				unstarted.remove(key);
-				ready.put(key, proc);
+				if(ready.containsKey(clock))
+				{
+					TreeMap<Integer, Process> map = ready.get(clock);
+					map.put(proc.getProcessID(), proc);
+				}
+				else
+				{
+					TreeMap<Integer, Process> map = new TreeMap<Integer, Process>();
+					map.put(proc.getProcessID(), proc);
+					ready.put(clock,map);
+				}
 			}
 		}
 	}
-	
+
 	private void processReady()
 	{
-		Iterator<DualKey<Integer, Integer>> itr = ready.keySet().iterator();
+		Iterator<Integer> itr = ready.keySet().iterator();
 
 		while(itr.hasNext())
 		{
-			DualKey<Integer, Integer> key = itr.next();
-			Process proc =ready.get(key);
+			Integer key = itr.next();
+			TreeMap<Integer, Process> map = ready.get(key);
 
-			if(running == null)
+			Iterator<Integer> mapItr = map.keySet().iterator();
+			
+			while(mapItr.hasNext())
 			{
-				proc.setStatus(ProcessStatus.Running);
-				running = proc;
-				cpuBurst = rnd.randomOS(proc.getBurst());
-				System.out.println("CPU Burst: " + cpuBurst);
-				itr.remove();
-				ready.remove(key);
-			}
-			else
-			{
-				proc.hold();
+				int ProcID = mapItr.next();
+				Process proc = map.get(ProcID);
+
+				if(running == null)
+				{
+					proc.setStatus(ProcessStatus.running);
+					running = proc;
+					
+					int rndBurst = rnd.randomOS(proc.getBurst());; 
+					cpuBurst = 1 + (rndBurst%proc.getBurst());
+					proc.setPendingCPUBurst(cpuBurst);
+					//System.out.println("\nCPU Burst:\t" + rndBurst+"\t" + cpuBurst);
+					
+					mapItr.remove();
+					map.remove(ProcID);
+				}
+				else
+				{
+					proc.hold();
+				}
 			}
 		}
-		
+
 	}
-	
+
 	private void processBlocked()
 	{
 		Iterator<DualKey<Integer, Integer>> itr = blocked.keySet().iterator(); 
-		
+
 		while(itr.hasNext())
 		{
 			DualKey<Integer, Integer> key = itr.next();
 			Process proc =blocked.get(key);
-			
+
 			if (proc.getPendingIOBurst() > 0)
 			{
 				proc.performIO();
@@ -179,10 +206,19 @@ public class FCFS {
 			else
 			{
 				itr.remove();
-				proc.setStatus(ProcessStatus.Ready);
+				proc.setStatus(ProcessStatus.ready);
 				blocked.remove(key);
 				proc.setReadyTime(clock);
-				ready.put(clock, key.getProcessID(), proc);
+				if(ready.containsKey(clock))
+				{
+					ready.get(clock).put(proc.getProcessID(), proc);
+				}
+				else
+				{
+					TreeMap<Integer, Process> map = new TreeMap<Integer, Process>();
+					map.put(proc.getProcessID(), proc);
+					ready.put(clock, map);
+				}
 			}
 		}
 	}

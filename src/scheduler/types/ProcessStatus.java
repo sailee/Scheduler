@@ -2,5 +2,5 @@ package scheduler.types;
 
 public enum ProcessStatus {
 	
-	unstarted, Running, Blocked, Ready, Complete;
+	unstarted, running, blocked, ready, terminated;
 }

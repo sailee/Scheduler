@@ -27,7 +27,7 @@ public class RandomNos {
 	{
 		int nextRandom = scan.nextInt();
 		//System.out.println(nextRandom);
-		return 1+(nextRandom%number);
-		//return nextRandom;
+		//return 1+(nextRandom%number);
+		return nextRandom;
 	}
 }

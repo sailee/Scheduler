@@ -5,7 +5,11 @@ package scheduler.types;
  *
  */
 public class Process {
-	private int processID, arrivalTime, burst, totalCPUtime, IO, pendingCPUTime, pendingIOBurst, readyTime;
+	private int processID, arrivalTime, burst, totalCPUtime, IO, pendingCPUTime, pendingIOBurst, readyTime, pendingCPUBurst;
+	private int finishingTime, IOTime , waitingTime;
+	private ProcessStatus status;
+
+	
 	public int getReadyTime() {
 		return readyTime;
 	}
@@ -13,9 +17,6 @@ public class Process {
 	public void setReadyTime(int readyTime) {
 		this.readyTime = readyTime;
 	}
-
-	private int finishingTime, IOTime , waitingTime;
-	private ProcessStatus status;
 	
 	public int getPendingIOBurst() {
 		return pendingIOBurst;
@@ -100,6 +101,7 @@ public class Process {
 
 	public void run(){
 		pendingCPUTime --;
+		pendingCPUBurst --;
 	}
 
 	public ProcessStatus getStatus() {
@@ -112,12 +114,32 @@ public class Process {
 	
 	public String displayStatus()
 	{
-		return "\t"+status;
+		String str = "";
+		
+		if(status == ProcessStatus.running)
+		{
+			str = Integer.toString(pendingCPUBurst);
+		}
+		else if(status == ProcessStatus.blocked)
+		{
+			str = Integer.toString(pendingIOBurst);
+		}
+		else
+		{
+			str = "0";
+		}
+			
+		
+		if(status == ProcessStatus.unstarted || status == ProcessStatus.terminated)
+			return status.toString() +"\t" + str;
+		return  status.toString() +"\t\t" + str;
 	}
 
 	public String toString() {
 		String str = "\nProcess " +processID +":\n\t(A,B,C,IO) = ("+ arrivalTime+","+burst+","+totalCPUtime+","+IO+")\n\tFinishing time: "+
-				finishingTime + "\n\tPending time: " + pendingCPUTime+ "\n\tTurnaround time: " + getTurnaroundTime() + "\n\tI/O time: " + IOTime + "\n\tWaiting time: " + 
+				finishingTime + 
+				//"\n\tPending time: " + pendingCPUTime+ 
+				"\n\tTurnaround time: " + getTurnaroundTime() + "\n\tI/O time: " + IOTime + "\n\tWaiting time: " + 
 				waitingTime;
 
 		return str;
@@ -132,6 +154,20 @@ public class Process {
 
 	public void picked() {
 		waitingTime -=1;		
+	}
+
+	/**
+	 * @return the pendingCPUBurst
+	 */
+	public int getPendingCPUBurst() {
+		return pendingCPUBurst;
+	}
+
+	/**
+	 * @param pendingCPUBurst the pendingCPUBurst to set
+	 */
+	public void setPendingCPUBurst(int pendingCPUBurst) {
+		this.pendingCPUBurst = pendingCPUBurst;
 	}
 
 }
