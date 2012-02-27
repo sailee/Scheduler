@@ -25,7 +25,7 @@ public class Main {
 				fetchProcessList(args[0]);
 			} 
 			else
-				fetchProcessList("test1.txt");
+				fetchProcessList("test4.txt");
 
 			FCFS f = new FCFS(processes);
 			f.performFCFS();			
