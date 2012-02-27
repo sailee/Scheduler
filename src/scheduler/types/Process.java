@@ -122,7 +122,7 @@ public class Process {
 		}
 		else if(status == ProcessStatus.blocked)
 		{
-			str = Integer.toString(pendingIOBurst);
+			str = Integer.toString(pendingIOBurst+1);
 		}
 		else
 		{

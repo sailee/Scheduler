@@ -1,45 +1,35 @@
 package scheduler;
 
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.TreeMap;
 
-import scheduler.types.DualKey;
-import scheduler.types.DualKeyTreeMap;
 import scheduler.types.Process;
 import scheduler.types.ProcessStatus;
 
 public class FCFS {
-	private DualKeyTreeMap<Integer, Integer, Process> unstarted, blocked;
+	private TreeMap<Integer, Process> unstarted, blocked;
 	private TreeMap<Integer, Process> complete, processes;
 	private scheduler.types.Process running;
 	private RandomNos rnd;
 	private int cpuBurst, clock, processCount;
 	private TreeMap<Integer, TreeMap<Integer, Process>> ready;
 
-	public FCFS(DualKeyTreeMap<Integer, Integer, Process> procs) {
-		Comparator<Integer> cmp = new Comparator<Integer>() {
-
-			@Override
-			public int compare(Integer o1, Integer o2) {
-				return o1.compareTo(o2);
-			}
-
-		};
+	public FCFS(TreeMap<Integer, Process> procs) {		
 
 		unstarted = procs;		
 		ready = new TreeMap<Integer,TreeMap<Integer,Process>>();
-		blocked = new DualKeyTreeMap<Integer, Integer, Process>(cmp, cmp);
+		blocked = new TreeMap<Integer, Process>();
 		complete = new TreeMap<Integer, Process>();
 		processes = new TreeMap<Integer, Process>();
 
-		Iterator<DualKey<Integer, Integer>> itr = procs.keySet().iterator();
+		Iterator<Integer> itr = procs.keySet().iterator();
 
 		while(itr.hasNext())
 		{
-			DualKey<Integer, Integer> key = itr.next();
+			Integer key = itr.next();
+			Process proc = procs.get(key);
 
-			processes.put(key.getProcessID(), procs.get(key));
+			processes.put(proc.getProcessID(), proc);
 		}
 
 		rnd = new RandomNos();
@@ -49,22 +39,24 @@ public class FCFS {
 
 	public void performFCFS()
 	{		
-		boolean ranOneProcess;
+		boolean ranOneProcess = true;
 
 		for(clock = 0; complete.size() < processCount ;clock++)
 		{
-			ranOneProcess = false;
 			displayStatus();
+			
+			if(!ranOneProcess)
+			{				
+				processRunning();
+			}	
+			
+			ranOneProcess = false;
+			
 
 			ranOneProcess = processRunning();
 			processUnstarted();
 			processBlocked();			
-			processReady();
-
-			if(!ranOneProcess)
-			{				
-				processRunning();
-			}		
+			processReady();				
 		}
 		displayStatus();
 		displayProcessDetails();
@@ -98,7 +90,7 @@ public class FCFS {
 			//If this was the last CPU unit used, mark process as finished and set status to complete
 			if(running.getPendingCPUTime() == 0)							
 			{
-				running.finished(clock+1);
+				running.finished(clock);
 				running.setStatus(ProcessStatus.terminated);								
 				complete.put(running.getProcessID(), running);
 
@@ -116,7 +108,7 @@ public class FCFS {
 			running.setPendingIOBurst(IOburst);											
 			running.setStatus(ProcessStatus.blocked);
 
-			blocked.put(running.getArrivalTime(), running.getProcessID(), running);			
+			blocked.put(running.getProcessID(), running);			
 			running = null;			
 			return false;
 		}
@@ -125,11 +117,11 @@ public class FCFS {
 
 	private void processUnstarted()
 	{
-		Iterator<DualKey<Integer, Integer>> itr = unstarted.keySet().iterator();
+		Iterator<Integer> itr = unstarted.keySet().iterator();
 
 		while(itr.hasNext())
 		{
-			DualKey<Integer, Integer> key = itr.next();
+			Integer key = itr.next();
 			Process proc =unstarted.get(key);
 
 			if(proc.getArrivalTime() == clock)
@@ -192,11 +184,11 @@ public class FCFS {
 
 	private void processBlocked()
 	{
-		Iterator<DualKey<Integer, Integer>> itr = blocked.keySet().iterator(); 
+		Iterator<Integer> itr = blocked.keySet().iterator(); 
 
 		while(itr.hasNext())
 		{
-			DualKey<Integer, Integer> key = itr.next();
+			Integer key = itr.next();
 			Process proc =blocked.get(key);
 
 			if (proc.getPendingIOBurst() > 0)

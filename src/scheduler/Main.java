@@ -2,15 +2,14 @@ package scheduler;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.util.Comparator;
 import java.util.Scanner;
+import java.util.TreeMap;
 
-import scheduler.types.DualKeyTreeMap;
 import scheduler.types.Process;
 
 public class Main {
 
-	private static DualKeyTreeMap<Integer, Integer, Process> processes;	
+	private static TreeMap<Integer, Process> processes;	
 
 	/**
 	 * @param args Path where the input is located
@@ -39,16 +38,7 @@ public class Main {
 	}
 
 	private static void init() {
-		Comparator<Integer> cmp = new Comparator<Integer>() {
-
-			@Override
-			public int compare(Integer o1, Integer o2) {
-				return o1.compareTo(o2);
-			}
-
-		};
-
-		processes = new DualKeyTreeMap<Integer, Integer, Process>(cmp, cmp);
+		processes = new TreeMap<Integer, Process>();
 	}
 	
 	
@@ -98,7 +88,7 @@ public class Main {
 
 					Process p = new Process(arrival,burst, cpu, IO,i);
 
-					processes.put(arrival, i, p);										
+					processes.put(i, p);										
 				}
 			}
 
