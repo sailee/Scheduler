@@ -5,32 +5,12 @@ package scheduler.types;
  *
  */
 public class Process {
-	private int processID, arrivalTime, burst, totalCPUtime, IO, pendingCPUTime, pendingIOBurst, readyTime, pendingCPUBurst;
+	private int processID, arrivalTime, burst, totalCPUtime, IO, pendingCPUTime, pendingIOBurst, pendingCPUBurst; 	
 	private int finishingTime, IOTime , waitingTime;
 	private ProcessStatus status;
-
 	
-	public int getReadyTime() {
-		return readyTime;
-	}
-
-	public void setReadyTime(int readyTime) {
-		this.readyTime = readyTime;
-	}
-	
-	public int getPendingIOBurst() {
-		return pendingIOBurst;
-	}
-
-	public void setPendingIOBurst(int pendingIOBurst) {
-		this.pendingIOBurst = pendingIOBurst;
-	}
-
-	
-
 	public Process(int arrival, int burst, int cpu, int IO, int ID)
-	{
-		readyTime = arrival;
+	{		
 		arrivalTime = arrival;
 		this.burst = burst;
 		totalCPUtime = cpu;
@@ -44,6 +24,14 @@ public class Process {
 
 		processID = ID;
 		status = ProcessStatus.unstarted;
+	}
+	
+	public int getPendingIOBurst() {
+		return pendingIOBurst;
+	}
+
+	public void setPendingIOBurst(int pendingIOBurst) {
+		this.pendingIOBurst = pendingIOBurst;
 	}
 
 	public int getProcessID() {
@@ -104,10 +92,6 @@ public class Process {
 		pendingCPUBurst --;
 	}
 
-	public ProcessStatus getStatus() {
-		return status;
-	}
-
 	public void setStatus(ProcessStatus stat) {
 		status = stat;
 	}
@@ -143,17 +127,6 @@ public class Process {
 				waitingTime;
 
 		return str;
-	}
-
-	public boolean isComplete()
-	{
-		if(finishingTime >= 0)
-			return true;
-		return false;
-	}
-
-	public void picked() {
-		waitingTime -=1;		
 	}
 
 	/**

@@ -98,12 +98,9 @@ public class FCFS {
 			}						
 		}						
 		else						
-		{							
-			int rndBurst = rnd.randomOS(running.getIO());
-			int IOburst = 1 + (rndBurst%running.getIO());
-
-			//System.out.println("\nIO Burst:\t" + rndBurst + "\t"+ IOburst);
-
+		{			
+		
+			int IOburst = rnd.randomOS(running.getIO(), "IO");
 
 			running.setPendingIOBurst(IOburst);											
 			running.setStatus(ProcessStatus.blocked);
@@ -165,10 +162,8 @@ public class FCFS {
 					proc.setStatus(ProcessStatus.running);
 					running = proc;
 					
-					int rndBurst = rnd.randomOS(proc.getBurst());; 
-					cpuBurst = 1 + (rndBurst%proc.getBurst());
-					proc.setPendingCPUBurst(cpuBurst);
-					//System.out.println("\nCPU Burst:\t" + rndBurst+"\t" + cpuBurst);
+					cpuBurst = rnd.randomOS(proc.getBurst(),"CPU");
+					proc.setPendingCPUBurst(cpuBurst);					
 					
 					mapItr.remove();
 					map.remove(ProcID);
@@ -200,7 +195,7 @@ public class FCFS {
 				itr.remove();
 				proc.setStatus(ProcessStatus.ready);
 				blocked.remove(key);
-				proc.setReadyTime(clock);
+				
 				if(ready.containsKey(clock))
 				{
 					ready.get(clock).put(proc.getProcessID(), proc);

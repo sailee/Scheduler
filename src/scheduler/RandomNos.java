@@ -23,11 +23,18 @@ public class RandomNos {
 		}
 	}
 	
-	public int randomOS(int number)
+	public int randomOS(int number, String mode)
 	{
 		int nextRandom = scan.nextInt();
-		//System.out.println(nextRandom);
-		//return 1+(nextRandom%number);
-		return nextRandom;
+		if(mode.compareTo("CPU")==0)
+		{
+			System.out.println("Find burst when choosing ready process to run " + nextRandom);
+		}
+		else
+		{
+			System.out.println("Find I/O burst when blocking a process "+ nextRandom);
+		}
+		return 1+(nextRandom % number);
+		
 	}
 }
