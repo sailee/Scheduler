@@ -2,17 +2,18 @@ package scheduler;
 
 import java.util.Iterator;
 import java.util.TreeMap;
-
 import scheduler.types.Process;
 import scheduler.types.ProcessStatus;
 
-public class FCFS extends SchedulingAlgorithm{	
 
-	public FCFS(TreeMap<Integer, Process> procs) {		
+public class HighestPenaltyRatioNext extends SchedulingAlgorithm {
 
-		super(procs);	
+	public HighestPenaltyRatioNext(TreeMap<Integer,Process> procs) {		
+		super(procs);
 	}
 
+
+	@Override
 	protected boolean processRunning()
 	{
 		if(running == null)
@@ -47,10 +48,16 @@ public class FCFS extends SchedulingAlgorithm{
 		}
 		return true;
 	}
-	
+
+	@Override
 	protected void processReady()
 	{
-		Iterator<Double> itr = ready.keySet().iterator();
+		int ProcID;
+		Process proc;
+		
+		ready = recomputePenalties();
+				
+		Iterator<Double> itr = ready.descendingKeySet().iterator();
 
 		while(itr.hasNext())
 		{
@@ -61,8 +68,8 @@ public class FCFS extends SchedulingAlgorithm{
 
 			while(mapItr.hasNext())
 			{
-				int ProcID = mapItr.next();
-				Process proc = map.get(ProcID);
+				ProcID = mapItr.next();
+				proc = map.get(ProcID);
 
 				if(running == null)
 				{
@@ -81,9 +88,48 @@ public class FCFS extends SchedulingAlgorithm{
 				}
 			}
 		}
-
 	}
 
+
+	private TreeMap<Double, TreeMap<Integer, Process>> recomputePenalties() {
+		TreeMap<Double, TreeMap<Integer, Process>> temp = new TreeMap<Double, TreeMap<Integer,Process>>(); 
+		int ProcID;
+		Process proc;
+
+		Iterator<Double> itr = ready.keySet().iterator();
+
+		while(itr.hasNext())
+		{
+			Double key = itr.next();
+			TreeMap<Integer, Process> map = ready.get(key);
+
+			Iterator<Integer> mapItr = map.keySet().iterator();
+
+			while(mapItr.hasNext())
+			{
+				ProcID = mapItr.next();
+				proc = map.get(ProcID);
+
+				//r = T/t; where T is the wall clock time this process has been in system and t is the running time of the process to date.
+				Double penaltyRatio = (clock - proc.getArrivalTime())/Math.max(1D, proc.getTotalCPUtime() - proc.getPendingCPUTime()); 
+				if(temp.containsKey(penaltyRatio))
+				{
+					temp.get(penaltyRatio).put(ProcID, proc);
+				}
+				else
+				{
+					TreeMap<Integer, Process> m = new TreeMap<Integer,Process>();
+					m.put(ProcID, proc);
+
+					temp.put(penaltyRatio, m);
+				}
+			}
+
+		}
+		return temp;
+	}
+
+	@Override
 	protected void processBlocked()
 	{
 		Iterator<Integer> itr = blocked.keySet().iterator(); 
@@ -115,5 +161,6 @@ public class FCFS extends SchedulingAlgorithm{
 				}
 			}
 		}
-	}	
+	}
 }
+

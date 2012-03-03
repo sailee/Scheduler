@@ -1,7 +1,9 @@
 package scheduler;
 
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.PrintStream;
 import java.util.Scanner;
 import java.util.TreeMap;
 
@@ -19,6 +21,9 @@ public class Main {
 		try
 		{
 			init();
+			
+			PrintStream out = new PrintStream(new FileOutputStream("output.txt")); 
+			System.setOut(out);
 
 			if (args.length > 0) 
 			{			
@@ -26,9 +31,15 @@ public class Main {
 			} 
 			else
 				fetchProcessList("test4.txt");
+			
+			SchedulingAlgorithm algo = new RoundRobin(processes, 2);
+			algo.perform();
 
-			FCFS f = new FCFS(processes);
-			f.performFCFS();			
+//			FCFS f = new FCFS(processes);
+//			f.performFCFS();
+			
+//			Uniprogrammed up = new Uniprogrammed(processes);
+//			up.perform();
 		}
 		catch(Exception ex)
 		{

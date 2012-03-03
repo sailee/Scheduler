@@ -58,8 +58,8 @@ public class Process {
 		return pendingCPUTime;
 	}
 
-	public void finished(int time) {
-		finishingTime = time;				
+	public void finished(Double clock) {
+		finishingTime = clock.intValue();				
 	}
 
 	public int getFinishingTime() {
@@ -94,6 +94,10 @@ public class Process {
 
 	public void setStatus(ProcessStatus stat) {
 		status = stat;
+	}
+	
+	public ProcessStatus getStatus() {
+		return status;
 	}
 	
 	public String displayStatus()

@@ -1,3 +1,6 @@
+/**
+ * 
+ */
 package scheduler;
 
 import java.util.Iterator;
@@ -6,15 +9,21 @@ import java.util.TreeMap;
 import scheduler.types.Process;
 import scheduler.types.ProcessStatus;
 
-public class FCFS extends SchedulingAlgorithm{	
+/**
+ * @author Sailee
+ *
+ */
+public class RoundRobin extends SchedulingAlgorithm {
+	private int quantum;
+	public RoundRobin(TreeMap<Integer, Process> procs, int quantum) {		
 
-	public FCFS(TreeMap<Integer, Process> procs) {		
-
-		super(procs);	
+		super(procs);
+		this.quantum = quantum;		
 	}
 
+	@Override
 	protected boolean processRunning()
-	{
+	{		
 		if(running == null)
 			return false;
 
@@ -33,9 +42,8 @@ public class FCFS extends SchedulingAlgorithm{
 				running = null;		
 			}						
 		}						
-		else						
-		{			
-
+		else if(cpuBurst == 0)						
+		{	
 			int IOburst = rnd.randomOS(running.getIO(), "IO");
 
 			running.setPendingIOBurst(IOburst);											
@@ -45,9 +53,17 @@ public class FCFS extends SchedulingAlgorithm{
 			running = null;			
 			return false;
 		}
+		else
+		{
+			running.setStatus(ProcessStatus.ready);
+			return false;
+		}
+		
 		return true;
 	}
+
 	
+	@Override
 	protected void processReady()
 	{
 		Iterator<Double> itr = ready.keySet().iterator();
@@ -69,8 +85,12 @@ public class FCFS extends SchedulingAlgorithm{
 					proc.setStatus(ProcessStatus.running);
 					running = proc;
 
-					cpuBurst = rnd.randomOS(proc.getBurst(),"CPU");
-					proc.setPendingCPUBurst(cpuBurst);					
+					cpuBurst = rnd.randomOS(proc.getBurst(),"CPU");					
+					
+					proc.setPendingCPUBurst(cpuBurst);				
+					
+					if(cpuBurst > quantum)
+						cpuBurst = quantum;
 
 					mapItr.remove();
 					map.remove(ProcID);
@@ -84,6 +104,7 @@ public class FCFS extends SchedulingAlgorithm{
 
 	}
 
+	@Override
 	protected void processBlocked()
 	{
 		Iterator<Integer> itr = blocked.keySet().iterator(); 
@@ -115,5 +136,5 @@ public class FCFS extends SchedulingAlgorithm{
 				}
 			}
 		}
-	}	
+	}
 }
