@@ -22,10 +22,10 @@ public class RoundRobin extends FCFS {
 	}
 
 	@Override
-	protected boolean processRunning()
+	protected void processRunning()
 	{		
 		if(running == null)
-			return false;
+			return ;
 
 		if(cpuBurst > 0)						
 		{														
@@ -51,15 +51,15 @@ public class RoundRobin extends FCFS {
 
 			blocked.put(running.getProcessID(), running);			
 			running = null;			
-			return false;
+			return ;
 		}
 		else
 		{
 			running.setStatus(ProcessStatus.ready);
-			return false;
+			return;
 		}
 
-		return true;
+		return;
 	}
 
 

@@ -77,13 +77,11 @@ public class FCFS {
 			unstarted.put(key, process);
 		}
 
-		System.out.println("\nThe (sorted) input is: " + str);
+		System.out.println("\nThe original input was: " + str);
 	}
-
+	
 	public void perform()
 	{		
-		boolean ranOneProcess = true;
-
 		if(isVerbose || showRandom)
 		{
 			System.out.println("\nThis detailed printout gives the state and remaining burst for each process\n");
@@ -94,18 +92,10 @@ public class FCFS {
 			if(isVerbose)
 				displayStatus();
 
-			if(!ranOneProcess)
-			{				
-				processRunning();
-			}	
-
-			ranOneProcess = false;
-
-
-			ranOneProcess = processRunning();
 			processUnstarted();
 			processBlocked();			
-			processReady();				
+			processReady();		
+			processRunning();
 		}
 		if(isVerbose)
 			displayStatus();
@@ -156,39 +146,70 @@ public class FCFS {
 		}
 	}
 
-	protected boolean processRunning()
+	protected void processRunning()
 	{
 		if(running == null)
-			return false;
+			return;
+		
+		if(running.getPendingCPUTime() > 0)
+		{
+			if(cpuBurst > 0 )						
+			{														
+				cpuBurst --;							
+				running.run();
+				return;
+			}
 
-		if(cpuBurst > 0)						
-		{														
-			cpuBurst --;							
-			running.run();
+			if(cpuBurst == 0)						
+			{	
+				int IOburst = rnd.randomOS(running.getIO(), "IO");
 
-			//If this was the last CPU unit used, mark process as finished and set status to complete
-			if(running.getPendingCPUTime() == 0)							
-			{
-				running.finished(clock);
-				running.setStatus(ProcessStatus.terminated);								
-				complete.put(running.getProcessID(), running);
+				running.setPendingIOBurst(IOburst);											
+				running.setStatus(ProcessStatus.blocked);
 
-				running = null;		
-			}						
-		}						
-		else						
-		{			
-
-			int IOburst = rnd.randomOS(running.getIO(), "IO");
-
-			running.setPendingIOBurst(IOburst);											
-			running.setStatus(ProcessStatus.blocked);
-
-			blocked.put(running.getProcessID(), running);			
-			running = null;			
-			return false;
+				blocked.put(running.getProcessID(), running);
+				running = null;
+				runNextProcess();
+				return;
+			}
 		}
-		return true;
+		//If this was the last CPU unit used, mark process as finished and set status to complete
+		if(running.getPendingCPUTime() == 0)							
+		{
+			running.finished(clock);
+			running.setStatus(ProcessStatus.terminated);								
+			complete.put(running.getProcessID(), running);
+			running = null;
+
+			runNextProcess();
+		}
+
+		return;
+	}
+
+	protected void runNextProcess() {
+		if(ready.size() > 0)
+		{
+			Double key = ready.firstKey();
+			if(ready.get(key).size() > 0)
+			{
+				Integer firstKey = ready.get(key).firstKey();
+				running = ready.get(key).get(firstKey);
+				running.setStatus(ProcessStatus.running);
+
+				ready.get(key).remove(firstKey);
+
+				if(ready.get(key).size() == 0)
+				{
+					ready.remove(key);
+				}
+
+				cpuBurst = rnd.randomOS(running.getBurst(),"CPU");
+				running.setPendingCPUBurst(cpuBurst);
+				running.unHold();				
+				processRunning();					
+			}						
+		}
 	}
 
 	protected void processReady()
@@ -210,7 +231,7 @@ public class FCFS {
 				int ProcID = mapItr.next();
 				Process proc = map.get(ProcID);
 
-				if(running == null && blocked.size()==0)
+				if(running == null)
 				{
 					proc.setStatus(ProcessStatus.running);
 					running = proc;
@@ -226,6 +247,9 @@ public class FCFS {
 					proc.hold();
 				}
 			}
+
+			if(ready.get(key).size() == 0)
+				ready.remove(key);
 		}
 	}
 
@@ -243,7 +267,8 @@ public class FCFS {
 			{
 				proc.performIO();
 			}
-			else
+
+			if(proc.getPendingIOBurst() == 0)
 			{
 				itr.remove();
 				proc.setStatus(ProcessStatus.ready);
@@ -269,7 +294,7 @@ public class FCFS {
 		Double totalRunningTime =0D, totalIOTime=0D, turnAroundTime=0D, waitingTime = 0D;
 		int processCount = complete.size();
 		System.out.println("\nScheduling alogrithm used was : " + this.getClass().toString().replace("class scheduler.", ""));
-		
+
 		Iterator<Integer> itr = complete.keySet().iterator();		 
 
 		while(itr.hasNext())
@@ -286,13 +311,11 @@ public class FCFS {
 
 		System.out.println("\nSummary Data:");
 		System.out.println("Finishing time: " + clock.intValue());		
-		
+
 		System.out.println("CPU Utilization: " + (totalRunningTime/clock));
 		System.out.println("I/O Utilization: " + (totalIOTime/clock));
 		System.out.println("Throughput: "+ (100*processCount/clock) +" processes per hundred cycles");
 		System.out.println("Average turnaround time: " + (turnAroundTime/processCount));
 		System.out.println("Average waiting time: " + (waitingTime/processCount));
 	}
-
-
 }

@@ -102,6 +102,10 @@ public class Process {
 	public void hold() {
 		waitingTime++;		
 	}
+	
+	public void unHold() {
+		waitingTime--;		
+	}
 
 	public void run(){
 		pendingCPUTime --;
@@ -122,20 +126,20 @@ public class Process {
 		
 		if(status == ProcessStatus.running)
 		{
-			str = Integer.toString(pendingCPUBurst);
+			str = Integer.toString(pendingCPUBurst+1);
 		}
 		else if(status == ProcessStatus.blocked)
 		{
-			str = Integer.toString(pendingIOBurst+1);
+			str = Integer.toString(pendingIOBurst);
 		}
 		else
 		{
 			str = "0";
 		}			
 		
-		if(status == ProcessStatus.unstarted || status == ProcessStatus.terminated)
-			return status.toString() +"\t" + str;
-		return  status.toString() +"\t\t" + str;
+//		if(status == ProcessStatus.unstarted || status == ProcessStatus.terminated)
+//			return status.toString() +"\t" + str;
+		return  status.toString() +"\t" + str;
 	}
 
 	public String toShortString()

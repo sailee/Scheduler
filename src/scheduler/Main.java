@@ -3,7 +3,6 @@ package scheduler;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Scanner;
 import java.util.TreeMap;
@@ -28,10 +27,7 @@ public class Main {
 
 		try
 		{
-			init();
-
-			PrintStream out = new PrintStream(new FileOutputStream("output.txt")); 
-			System.setOut(out);
+			init();			
 
 			switch(args.length)
 			{
@@ -47,13 +43,17 @@ public class Main {
 			case 3:
 				isSuccess = processInput(args[0], args[1], args[2]);
 				break;
-			}
+			}			
 
 			if(!isSuccess)
 			{
 				System.out.println("Invalid arguments passed to main. Please type java scheduler.Main --help.");
 				return;
 			}
+			
+			String str = "solution_"+fileName;
+			PrintStream out = new PrintStream(new FileOutputStream(str)); 
+			System.setOut(out);
 			
 			fetchProcessList(fileName);		
 			
