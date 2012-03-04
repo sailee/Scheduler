@@ -13,11 +13,11 @@ import scheduler.types.ProcessStatus;
  * @author Sailee
  *
  */
-public class RoundRobin extends SchedulingAlgorithm {
+public class RoundRobin extends FCFS {
 	private int quantum;
-	public RoundRobin(TreeMap<Integer, Process> procs, int quantum) {		
+	public RoundRobin(TreeMap<Integer, Process> procs, int quantum, Boolean isVerboseFlag, Boolean showRandomFlag) {		
 
-		super(procs);
+		super(procs, isVerboseFlag, showRandomFlag);
 		this.quantum = quantum;		
 	}
 
@@ -58,11 +58,11 @@ public class RoundRobin extends SchedulingAlgorithm {
 			running.setStatus(ProcessStatus.ready);
 			return false;
 		}
-		
+
 		return true;
 	}
 
-	
+
 	@Override
 	protected void processReady()
 	{
@@ -86,9 +86,9 @@ public class RoundRobin extends SchedulingAlgorithm {
 					running = proc;
 
 					cpuBurst = rnd.randomOS(proc.getBurst(),"CPU");					
-					
+
 					proc.setPendingCPUBurst(cpuBurst);				
-					
+
 					if(cpuBurst > quantum)
 						cpuBurst = quantum;
 
@@ -98,41 +98,6 @@ public class RoundRobin extends SchedulingAlgorithm {
 				else
 				{
 					proc.hold();
-				}
-			}
-		}
-
-	}
-
-	@Override
-	protected void processBlocked()
-	{
-		Iterator<Integer> itr = blocked.keySet().iterator(); 
-
-		while(itr.hasNext())
-		{
-			Integer key = itr.next();
-			Process proc =blocked.get(key);
-
-			if (proc.getPendingIOBurst() > 0)
-			{
-				proc.performIO();
-			}
-			else
-			{
-				itr.remove();
-				proc.setStatus(ProcessStatus.ready);
-				blocked.remove(key);
-
-				if(ready.containsKey(clock))
-				{
-					ready.get(clock).put(proc.getProcessID(), proc);
-				}
-				else
-				{
-					TreeMap<Integer, Process> map = new TreeMap<Integer, Process>();
-					map.put(proc.getProcessID(), proc);
-					ready.put(clock, map);
 				}
 			}
 		}

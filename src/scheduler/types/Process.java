@@ -26,6 +26,22 @@ public class Process {
 		status = ProcessStatus.unstarted;
 	}
 	
+	public Process(Process process) {
+		arrivalTime = process.arrivalTime;
+		this.burst = process.burst;
+		totalCPUtime = process.totalCPUtime;
+		this.IO = process.IO;
+
+		pendingCPUTime = process.totalCPUtime;
+
+		finishingTime = -1;		
+		IOTime = 0;
+		waitingTime = 0;
+
+		processID = process.processID;
+		status = ProcessStatus.unstarted;
+	}
+
 	public int getPendingIOBurst() {
 		return pendingIOBurst;
 	}
@@ -115,14 +131,18 @@ public class Process {
 		else
 		{
 			str = "0";
-		}
-			
+		}			
 		
 		if(status == ProcessStatus.unstarted || status == ProcessStatus.terminated)
 			return status.toString() +"\t" + str;
 		return  status.toString() +"\t\t" + str;
 	}
 
+	public String toShortString()
+	{
+		return " ("+ arrivalTime+","+burst+","+totalCPUtime+","+IO+")";
+	}
+	
 	public String toString() {
 		String str = "\nProcess " +processID +":\n\t(A,B,C,IO) = ("+ arrivalTime+","+burst+","+totalCPUtime+","+IO+")\n\tFinishing time: "+
 				finishingTime + 
